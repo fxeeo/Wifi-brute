@@ -124,7 +124,7 @@ def crack_network(iface, ssid, passwords, ssid_color):
         # Wait for connection
         t0 = time.time()
         connected = False
-        while time.time() - t0 < 1.0: # 1.0s timeout for connection attempt per password
+        while time.time() - t0 < 5.0: # 5.0s timeout for connection attempt per password
             if iface.status() == const.IFACE_CONNECTED:
                 connected = True
                 break
