@@ -43,11 +43,23 @@ def print_banner():
     print(f"\n{color}{BOLD}CREATED BY FXEEEO{RESET}\n")
 
 def get_wifi_interface():
-    wifi = pywifi.PyWiFi()
-    if len(wifi.interfaces()) == 0:
-        print(f"{RED}No Wi-Fi interface found.{RESET}")
+    try:
+        wifi = pywifi.PyWiFi()
+        if len(wifi.interfaces()) == 0:
+            print(f"{RED}No Wi-Fi interface found.{RESET}")
+            sys.exit(1)
+        return wifi.interfaces()[0]
+    except FileNotFoundError as e:
+        if "wpa_supplicant" in str(e):
+            print(f"{RED}Error: wpa_supplicant service not found.{RESET}")
+            print(f"{YELLOW}Please ensure Wi-Fi is enabled and wpa_supplicant is running.{RESET}")
+            if os.name != 'nt':
+                print(f"{YELLOW}Try running the script with 'sudo' or start the service: sudo systemctl start wpa_supplicant{RESET}")
+            sys.exit(1)
+        raise e
+    except Exception as e:
+        print(f"{RED}Error initializing pywifi: {e}{RESET}")
         sys.exit(1)
-    return wifi.interfaces()[0]
 
 def check_wifi_enabled(iface):
     try:
@@ -186,7 +198,9 @@ def main():
 
     # Wordlists
     wordlists_files = get_wordlists()
+    print(f"{BLUE}Found {len(wordlists_files)} wordlist file(s). Loading passwords...{RESET}")
     passwords = load_passwords(wordlists_files)
+    print(f"{BLUE}Loaded {len(passwords)} unique passwords.{RESET}")
 
     if not passwords:
         print(f"{RED}No passwords found in wordlists.{RESET}")
